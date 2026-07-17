@@ -1,0 +1,48 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://oss.sonatype.org/content/repositories/releases/' }
+}
+
+dependencies {
+    // LibGDX core
+    implementation libs.gdx.core
+    implementation libs.ashley
+
+    // LWJGL3 desktop backend + natives
+    implementation libs.gdx.backend
+    implementation(libs.gdx.natives) { artifact { classifier = 'natives-desktop' } }
+
+    // Headless backend for unit tests (no display required)
+    testImplementation libs.gdx.headless
+    testImplementation(libs.gdx.headless.natives) { artifact { classifier = 'natives-desktop' } }
+
+    // JUnit 5
+    testImplementation libs.junit.jupiter
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+application {
+    mainClass = 'com.parkour.DesktopLauncher'
+}
+
+// Assets available at runtime
+sourceSets.main.resources.srcDirs += ['../assets']
+
+tasks.named('test') {
+    useJUnitPlatform()
+    systemProperty 'java.awt.headless', 'true'
+}
+
+// Suppress Java 25 native-access warnings from LWJGL
+tasks.withType(JavaExec).configureEach {
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+}
